@@ -4,12 +4,13 @@ import time
 import sys
 
 
+# TODO ADD SUPPORT FOR ACT TAGS IN TEST DATA.
 class Tagger:
     def __init__(self):
         # ram_train_path='/Users/nikhildhara/Desktop/nlp-tagger/ram_data/train'
         # ram_test_path='/Users/nikhildhara/Desktop/nlp-tagger/ram_data/dev'
 
-        # self.train_set_path = '/Users/nikhildhara/Desktop/nlp-tagger/ram_data/train'
+        # self.train_set_path = '/Users/nikhildhara/Desktop/nlp-tagger/nik_test'
         # self.test_set_path = '/Users/nikhildhara/Desktop/nlp-tagger/ram_data/dev'
 
         self.train_set_path = sys.argv[1]
@@ -32,26 +33,25 @@ class Tagger:
     def train(self):
         self.training_data = list(hw2_corpus_tool.get_data(self.train_set_path))
         for utterance in self.training_data:
-            count = 0
+            index = 0
             utterance_label = []
-            current_speaker = ''
             past_speaker = ''
             feature_list = []
-            for val in utterance:
+            for sentence in utterance:
                 all_token = []
                 all_pos = []
                 line_features = []
-                current_speaker = val.speaker
-                if count == 0:
+                current_speaker = sentence.speaker
+                if index == 0:
                     line_features.append('fs')
-                if count > 0:
+                if index > 0:
                     if current_speaker != past_speaker:
                         line_features.append('ch')
-                tokens_tags = val.pos
+                tokens_tags = sentence.pos
 
                 if tokens_tags is not None:
-                    line_features.append('beginWithPos=' + tokens_tags[0].pos)
-                    line_features.append('beginWithToken=' + tokens_tags[0].token)
+                    line_features.append('startpos=' + tokens_tags[0].pos)
+                    line_features.append('starttoken=' + tokens_tags[0].token)
 
                 if tokens_tags is not None:
                     for x in tokens_tags:
@@ -60,7 +60,7 @@ class Tagger:
                         line_features.append('TOKEN_' + x.token)
                     for x in tokens_tags:
                         all_pos.append(x.pos)
-                        line_features.append('POS_' +x.pos)
+                        line_features.append('POS_' + x.pos)
                     bigram_token = self.get_bigram(all_token)
                     bigram_pos = self.get_bigram(all_pos)
                     trigram_token = self.get_trigram(all_token)
@@ -82,11 +82,11 @@ class Tagger:
                     line_features.append('NO_WORDS')
 
                 if tokens_tags is not None:
-                    line_features.append('endWithPos=' + tokens_tags[-1].pos)
-                    line_features.append('endWithToken=' + tokens_tags[-1].token)
-                utterance_label.append(val.act_tag)
+                    line_features.append('endpos=' + tokens_tags[-1].pos)
+                    line_features.append('endtoken=' + tokens_tags[-1].token)
+                utterance_label.append(sentence.act_tag)
                 feature_list.append(line_features)
-                count += 1
+                index += 1
                 past_speaker = current_speaker
             self.trainfeatures.append(feature_list)
             self.trainlabels.append(utterance_label)
@@ -104,31 +104,31 @@ class Tagger:
             'feature.possible_transitions': True
         })
         self.trainer.train('tagger_model_trained')
-        print(self.trainer)
 
     def test(self):
         self.testing_data = list(hw2_corpus_tool.get_data(self.test_set_path))
         for utterance in self.testing_data:
 
-            count = 0
+            index = 0
             utterance_label = []
             past_speaker = ''
             feature_list = []
-            for val in utterance:
+            for sentence in utterance:
                 all_token = []
                 all_pos = []
                 line_features = []
-                current_speaker = val.speaker
-                if count == 0:
+                current_speaker = sentence.speaker
+                if index == 0:
                     line_features.append('fs')
-                if count > 0:
+                if index > 0:
                     if current_speaker != past_speaker:
                         line_features.append('ch')
-                tokens_tags = val.pos
+                tokens_tags = sentence.pos
+                # if tokens_tags is not None:
+
                 if tokens_tags is not None:
-                    line_features.append('beginWithPos=' + tokens_tags[0].pos)
-                    line_features.append('beginWithToken=' + tokens_tags[0].token)
-                if tokens_tags is not None:
+                    line_features.append('startpos=' + tokens_tags[0].pos)
+                    line_features.append('starttoken=' + tokens_tags[0].token)
                     for x in tokens_tags:
                         line_features.append('TOKEN_' + x.token)
                         all_token.append(x.token)
@@ -151,32 +151,43 @@ class Tagger:
                     for word1, word2, word3 in trigram_pos:
                         word = word1 + ',' + word2 + ',' + word3
                         line_features.append('TGP_' + word)
+                    line_features.append('endpos=' + tokens_tags[-1].pos)
+                    line_features.append('endtoken=' + tokens_tags[-1].token)
 
                 else:
                     line_features.append('NO_WORDS')
-                if tokens_tags is not None:
-                    line_features.append('endWithPos=' + tokens_tags[-1].pos)
-                    line_features.append('endWithToken=' + tokens_tags[-1].token)
+                # if tokens_tags is not None:
 
-                utterance_label.append(val.act_tag)
+                utterance_label.append(sentence.act_tag)
                 feature_list.append(line_features)
-                count += 1
+                index += 1
                 past_speaker = current_speaker
             self.testfeatures.append(feature_list)
             self.testlabels.append(utterance_label)
 
-    def check_accuracy(self):
+    # def check_accuracy(self):
+    #     tagger = pycrfsuite.Tagger()
+    #     tagger.open('tagger_model_trained')
+    #     sum = 0
+    #     cor = 0
+    #     for i in range(len(self.testfeatures)):
+    #         pred = tagger.tag(self.testfeatures[i])
+    #         for j in range(len(pred)):
+    #             if pred[j] == self.testlabels[i][j]:
+    #                 cor += 1
+    #             sum += 1
+    #     print("Advanced Acccuracy = " + str(cor * 100 / sum) + '%\n')
+
+    def write_output(self):
         tagger = pycrfsuite.Tagger()
         tagger.open('tagger_model_trained')
-        sum = 0
-        cor = 0
+        output_file = open(self.output_file, 'w')
         for i in range(len(self.testfeatures)):
             pred = tagger.tag(self.testfeatures[i])
             for j in range(len(pred)):
-                if pred[j] == self.testlabels[i][j]:
-                    cor += 1
-                sum += 1
-        print("Advanced Acccuracy = " + str(cor * 100 / sum) + '%\n')
+                output_file.write(pred[j] + '\n')
+            output_file.write('\n')
+        output_file.close()
 
 
 if __name__ == '__main__':
@@ -188,6 +199,7 @@ if __name__ == '__main__':
     print('CRF Model trained on input data')
     tag.test()
     print('CRF Model tested on testing data')
-    tag.check_accuracy()
+    # tag.check_accuracy()
+    tag.write_output()
     end_time = time.time()
     print('Time Taken', end_time - start_time)
