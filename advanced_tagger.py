@@ -16,10 +16,10 @@ class Tagger:
         self.train_set_path = sys.argv[1]
         self.test_set_path = sys.argv[2]
         self.output_file = sys.argv[3]
-        self.trainlabels = []
-        self.testlabels = []
-        self.trainfeatures = []
-        self.testfeatures = []
+        self.train_data_labels = []
+        self.test_data_labels = []
+        self.train_data_features = []
+        self.test_data_features = []
         self.training_data = []
         self.testing_data = []
         self.trainer = None
@@ -49,18 +49,15 @@ class Tagger:
                         line_features.append('ch')
                 tokens_tags = sentence.pos
 
-                if tokens_tags is not None:
+                if tokens_tags!=None:
                     line_features.append('startpos=' + tokens_tags[0].pos)
                     line_features.append('starttoken=' + tokens_tags[0].token)
 
                 if tokens_tags is not None:
-                    for x in tokens_tags:
-                        all_token.append(x.token)
-
-                        line_features.append('TOKEN_' + x.token)
-                    for x in tokens_tags:
-                        all_pos.append(x.pos)
-                        line_features.append('POS_' + x.pos)
+                    [all_token.append(x.token) for x in tokens_tags]
+                    [line_features.append('TOKEN_' + x.token) for x in tokens_tags]
+                    [all_pos.append(x.pos) for x in tokens_tags]
+                    [line_features.append('POS_' + x.pos) for x in tokens_tags]
                     bigram_token = self.get_bigram(all_token)
                     bigram_pos = self.get_bigram(all_pos)
                     trigram_token = self.get_trigram(all_token)
@@ -88,12 +85,12 @@ class Tagger:
                 feature_list.append(line_features)
                 index += 1
                 past_speaker = current_speaker
-            self.trainfeatures.append(feature_list)
-            self.trainlabels.append(utterance_label)
+            self.train_data_features.append(feature_list)
+            self.train_data_labels.append(utterance_label)
 
     def build_model(self):
         self.trainer = pycrfsuite.Trainer(verbose=False)
-        for x, y in zip(self.trainfeatures, self.trainlabels):
+        for x, y in zip(self.train_data_features, self.train_data_labels):
             self.trainer.append(x, y)
         self.trainer.set_params({
             'c1': 1.0,  # coefficient for L1 penalty
@@ -129,12 +126,10 @@ class Tagger:
                 if tokens_tags is not None:
                     line_features.append('startpos=' + tokens_tags[0].pos)
                     line_features.append('starttoken=' + tokens_tags[0].token)
-                    for x in tokens_tags:
-                        line_features.append('TOKEN_' + x.token)
-                        all_token.append(x.token)
-                    for x in tokens_tags:
-                        line_features.append('POS_' + x.pos)
-                        all_pos.append(x.pos)
+                    [all_token.append(x.token) for x in tokens_tags]
+                    [line_features.append('TOKEN_' + x.token) for x in tokens_tags]
+                    [all_pos.append(x.pos) for x in tokens_tags]
+                    [line_features.append('POS_' + x.pos) for x in tokens_tags]
                     trigram_token = self.get_trigram(all_token)
                     trigram_pos = self.get_trigram(all_pos)
                     bigram_token = self.get_bigram(all_token)
@@ -162,18 +157,18 @@ class Tagger:
                 feature_list.append(line_features)
                 index += 1
                 past_speaker = current_speaker
-            self.testfeatures.append(feature_list)
-            self.testlabels.append(utterance_label)
+            self.test_data_features.append(feature_list)
+            self.test_data_labels.append(utterance_label)
 
     # def check_accuracy(self):
     #     tagger = pycrfsuite.Tagger()
     #     tagger.open('tagger_model_trained')
     #     sum = 0
     #     cor = 0
-    #     for i in range(len(self.testfeatures)):
-    #         pred = tagger.tag(self.testfeatures[i])
+    #     for i in range(len(self.test_data_features)):
+    #         pred = tagger.tag(self.test_data_features[i])
     #         for j in range(len(pred)):
-    #             if pred[j] == self.testlabels[i][j]:
+    #             if pred[j] == self.test_data_labels[i][j]:
     #                 cor += 1
     #             sum += 1
     #     print("Advanced Acccuracy = " + str(cor * 100 / sum) + '%\n')
@@ -182,8 +177,8 @@ class Tagger:
         tagger = pycrfsuite.Tagger()
         tagger.open('tagger_model_trained')
         output_file = open(self.output_file, 'w')
-        for i in range(len(self.testfeatures)):
-            pred = tagger.tag(self.testfeatures[i])
+        for i in range(len(self.test_data_features)):
+            pred = tagger.tag(self.test_data_features[i])
             for j in range(len(pred)):
                 output_file.write(pred[j] + '\n')
             output_file.write('\n')
@@ -191,15 +186,15 @@ class Tagger:
 
 
 if __name__ == '__main__':
-    start_time = time.time()
+    # start_time = time.time()
     tag = Tagger()
     tag.train()
-    print(' Input Features Loaded')
+    # print(' Input Features Loaded')
     tag.build_model()
-    print('CRF Model trained on input data')
+    # print('CRF Model trained on input data')
     tag.test()
-    print('CRF Model tested on testing data')
-    # tag.check_accuracy()
+    # print('CRF Model tested on testing data')
+    #tag.check_accuracy()
     tag.write_output()
-    end_time = time.time()
-    print('Time Taken', end_time - start_time)
+    # end_time = time.time()
+    # print('Time Taken', end_time - start_time)
