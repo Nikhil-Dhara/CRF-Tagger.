@@ -86,12 +86,12 @@ class Tagger:
                     [line_features.append('TOKEN_' + x.token) for x in tokens_tags]
                     [line_features.append('POS_' + x.pos) for x in tokens_tags]
 
-                utterance_label.append(sentence.act_tag)
+                #utterance_label.append(sentence.act_tag)
                 feature_list.append(line_features)
                 index += 1
                 past_speaker = current_speaker
             self.test_data_features.append(feature_list)
-            self.test_data_lables.append(utterance_label)
+           # self.test_data_lables.append(utterance_label)
 
     # def check_accuracy(self):
     #     tagger = pycrfsuite.Tagger()

@@ -53,7 +53,7 @@ class Tagger:
                     line_features.append('startpos=' + tokens_tags[0].pos)
                     line_features.append('starttoken=' + tokens_tags[0].token)
 
-                if tokens_tags is not None:
+                if tokens_tags!=None:
                     [all_token.append(x.token) for x in tokens_tags]
                     [line_features.append('TOKEN_' + x.token) for x in tokens_tags]
                     [all_pos.append(x.pos) for x in tokens_tags]
@@ -153,12 +153,12 @@ class Tagger:
                     line_features.append('NO_WORDS')
                 # if tokens_tags is not None:
 
-                utterance_label.append(sentence.act_tag)
+                #utterance_label.append(sentence.act_tag)
                 feature_list.append(line_features)
                 index += 1
                 past_speaker = current_speaker
             self.test_data_features.append(feature_list)
-            self.test_data_labels.append(utterance_label)
+            #self.test_data_labels.append(utterance_label)
 
     # def check_accuracy(self):
     #     tagger = pycrfsuite.Tagger()

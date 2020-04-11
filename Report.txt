@@ -1,0 +1,25 @@
+Assignment 2 Report
+
+Name:
+
+1. Describe how you evaluated your baseline and advanced features:
+Ans> Moved 25 percent of data into test folder and other 75 percent into train folder using make_train_test.py script
+
+2. Accuracy of baseline features during your evaluation:
+72.7 percent
+
+3. Describe your advanced feature set:
+
+Features:
+ Added trigram words to the feature vector
+ Added Bigram words to the feature vector
+ Added beginning and ending TOKEN to the feature vector since they offer lot of information about sentence
+ Added beginning and ending POS to the feature vector since they offer lot of information about sentence
+
+4. If you tried and rejected alternate advanced feature sets, please describe them:
+Rejected:
+Adding capitals to the feature vector as i did not notice much change in accuracy.
+
+
+5. Accuracy of advanced features was:
+Ans 74.5 percent
